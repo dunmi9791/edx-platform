@@ -37,29 +37,10 @@ pipeline {
     stages {
         stage('Run Tests') {
             parallel {
-                // stage("lms-unit") {
-                //     agent { label "jenkins-worker" }
-                //     environment {
-                //         TEST_SUITE = "lms-unit"
-                //         XDIST_NUM_TASKS = 10
-                //     }
-                //     steps {
-                //         script {
-                //             runPythonTests()
-                //         }
-                //     }
-                //     post {
-                //         always {
-                //             script {
-                //                 pythonTestCleanup()
-                //             }
-                //         }
-                //     }
-                // }
-                stage("cms-unit") {
+                stage("lms-unit") {
                     agent { label "jenkins-worker" }
                     environment {
-                        TEST_SUITE = "cms-unit"
+                        TEST_SUITE = "lms-unit"
                         XDIST_NUM_TASKS = 10
                     }
                     steps {
@@ -75,25 +56,44 @@ pipeline {
                         }
                     }
                 }
-                // stage("commonlib-unit") {
-                //     agent { label "jenkins-worker" }
-                //     environment {
-                //         TEST_SUITE = "commonlib-unit"
-                //         XDIST_NUM_TASKS = 3
-                //     }
-                //     steps {
-                //         script {
-                //             runPythonTests()
-                //         }
-                //     }
-                //     post {
-                //         always {
-                //             script {
-                //                 pythonTestCleanup()
-                //             }
-                //         }
-                //     }
-                // }
+                stage("cms-unit") {
+                    agent { label "jenkins-worker" }
+                    environment {
+                        TEST_SUITE = "cms-unit"
+                        XDIST_NUM_TASKS = 4
+                    }
+                    steps {
+                        script {
+                            runPythonTests()
+                        }
+                    }
+                    post {
+                        always {
+                            script {
+                                pythonTestCleanup()
+                            }
+                        }
+                    }
+                }
+                stage("commonlib-unit") {
+                    agent { label "jenkins-worker" }
+                    environment {
+                        TEST_SUITE = "commonlib-unit"
+                        XDIST_NUM_TASKS = 3
+                    }
+                    steps {
+                        script {
+                            runPythonTests()
+                        }
+                    }
+                    post {
+                        always {
+                            script {
+                                pythonTestCleanup()
+                            }
+                        }
+                    }
+                }
             }
         }
         stage('Run coverage') {
@@ -111,9 +111,9 @@ pipeline {
                             userRemoteConfigs: [[credentialsId: 'jenkins-worker',
                             refspec: '+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pr/*',
                             url: 'git@github.com:edx/edx-platform.git']]]
-                        // unstash 'lms-unit-reports'
+                        unstash 'lms-unit-reports'
                         unstash 'cms-unit-reports'
-                        // unstash 'commonlib-unit-reports'
+                        unstash 'commonlib-unit-reports'
                         sh "./scripts/jenkins-report.sh"
                     }
                 }
