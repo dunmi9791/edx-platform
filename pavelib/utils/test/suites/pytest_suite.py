@@ -268,7 +268,7 @@ class LibTestSuite(PytestSuite):
             cmd.append('--dist=loadscope')
             for ip in self.xdist_ip_addresses.split(','):
                 # The django settings runtime command does not propagate to xdist remote workers
-                django_env_var_cmd = 'export DJANGO_SETTINGS_MODULE={}'.format('{}.envs.{}'.format(self.root, self.settings))
+                django_env_var_cmd = "export DJANGO_SETTINGS_MODULE='openedx.tests.settings'
                 xdist_string = '--tx ssh="ubuntu@{} -o StrictHostKeyChecking=no"//python="source /edx/app/edxapp/edxapp_env; {}; python"' \
                                '//chdir="/edx/app/edxapp/edx-platform"'.format(ip, django_env_var_cmd)
                 cmd.append(xdist_string)

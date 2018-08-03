@@ -1,17 +1,15 @@
 def runPythonTests() {
-    ansiColor('gnome-terminal') {
-        sshagent(credentials: ['jenkins-worker', 'jenkins-worker-pem'], ignoreMissing: true) {
-            checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: '${sha1}']],
-                doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
-                userRemoteConfigs: [[credentialsId: 'jenkins-worker',
-                refspec: '+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pr/*',
-                url: 'git@github.com:edx/edx-platform.git']]]
-            sh 'bash scripts/all-tests.sh'
-            // dir('stdout') {
-            //     writeFile file: "${TEST_SUITE}-stdout.log", text: console_output
-            // }
-            stash includes: 'reports/**/*coverage*', name: "${TEST_SUITE}-reports"
-        }
+    sshagent(credentials: ['jenkins-worker', 'jenkins-worker-pem'], ignoreMissing: true) {
+        checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: '${XDIST_GIT_BRANCH}']],
+            doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
+            userRemoteConfigs: [[credentialsId: 'jenkins-worker',
+            refspec: '+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pr/*',
+            url: 'git@github.com:edx/edx-platform.git']]]
+        sh 'bash scripts/all-tests.sh'
+        // dir('stdout') {
+        //     writeFile file: "${TEST_SUITE}-stdout.log", text: console_output
+        // }
+        stash includes: 'reports/**/*coverage*', name: "${TEST_SUITE}-reports"
     }
 }
 
@@ -104,18 +102,16 @@ pipeline {
                 SUBSET_JOB = "null" // Keep this variable until we can remove the $SUBSET_JOB path from .coveragerc
             }
             steps {
-                ansiColor('gnome-terminal') {
-                    sshagent(credentials: ['jenkins-worker'], ignoreMissing: true) {
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: '${sha1}']],
-                            doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
-                            userRemoteConfigs: [[credentialsId: 'jenkins-worker',
-                            refspec: '+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pr/*',
-                            url: 'git@github.com:edx/edx-platform.git']]]
-                        unstash 'lms-unit-reports'
-                        unstash 'cms-unit-reports'
-                        unstash 'commonlib-unit-reports'
-                        sh "./scripts/jenkins-report.sh"
-                    }
+                sshagent(credentials: ['jenkins-worker'], ignoreMissing: true) {
+                    checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: '${sha1}']],
+                        doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
+                        userRemoteConfigs: [[credentialsId: 'jenkins-worker',
+                        refspec: '+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pr/*',
+                        url: 'git@github.com:edx/edx-platform.git']]]
+                    unstash 'lms-unit-reports'
+                    unstash 'cms-unit-reports'
+                    unstash 'commonlib-unit-reports'
+                    sh "./scripts/jenkins-report.sh"
                 }
             }
             post {
